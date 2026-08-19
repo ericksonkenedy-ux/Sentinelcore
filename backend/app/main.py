@@ -1,15 +1,45 @@
 from fastapi import FastAPI
-from backend.app.api import auth, assets, events, alerts, incidents
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Sentinelcore")
+from app.core.config import settings
+from app.db.database import Base, engine
+from app.db import models
 
-# Include routers
-app.include_router(auth.router, prefix="/auth")
-app.include_router(assets.router, prefix="/assets")
-app.include_router(events.router, prefix="/events")
-app.include_router(alerts.router, prefix="/alerts")
-app.include_router(incidents.router, prefix="/incidents")
+
+Base.metadata.create_all(bind=engine)
+
+
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    description=(
+        "SentinelCore is an authorized defensive cybersecurity "
+        "monitoring, detection, analysis and incident-response platform."
+    ),
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
-def read_root():
-    return {"ok": True, "service": "Sentinelcore backend"}
+def root():
+    return {
+        "name": settings.app_name,
+        "version": settings.app_version,
+        "status": "operational",
+        "message": "SentinelCore API is running",
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+    }
