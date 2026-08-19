@@ -1,0 +1,3 @@
+# Frontend placeholder
+
+This folder will contain the frontend application (React/Vue/other).
